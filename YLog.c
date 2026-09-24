@@ -94,20 +94,21 @@ static void ylog_print_on_console_with_color(const int level, const char* log_st
 ////////// 静态工具函数实现 //////////
 
 
+// 日志测试示例函数
 int ylog_test_example(int argc, char** argv)
 {
     printf("%s\n", __FUNCTION__);
 
-    // YLog 配置日志打印功能
+    // YLog 配置日志打印功能；字段含义可参考头文件数据结构定义；
     static YLog_Config ylog_config;
-    sprintf(ylog_config.project_name, "%s", "YLog");
+    sprintf(ylog_config.project_name, "%s", "YLog"); // 使用该日志的项目名称
 
-    ylog_config.is_print_on_console = 1;
-    ylog_config.is_only_print_on_console = 0;
-    ylog_config.is_print_on_console_with_color = 1;
+    ylog_config.is_print_on_console = 1; // 是否在控制台打印日志
+    ylog_config.is_only_print_on_console = 0; // 是否只在控制台打印日志；前提条件：is_print_on_console
+    ylog_config.is_print_on_console_with_color = 1; // 在控制台打印，是否带颜色；前提条件：is_print_on_console
 
-    ylog_config.min_log_level = YLog_Trace;
-    ylog_config.one_line_log_string_max_len = 1024;
+    ylog_config.min_log_level = YLog_Trace; // 最小日志级别；小于该日志级别的不打印；
+    ylog_config.one_line_log_string_max_len = 1024; // 一行日志最大字符串长度；
 
     // YLog 初始化
     ylog_init(&ylog_config);
