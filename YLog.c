@@ -15,12 +15,24 @@
 static YLog_Config s_ylog_config;
 static char* s_one_log_string_buffer = NULL;
 
+const char g_ylog_level_string[][16] =
+{
+    "TRACE",
+    "DEBUG",
+    "INFO",
+    "WARNING",
+    "ERROR",
+    "CRITICAL"
+};
+
 static FILE* s_fp_ylog_file = NULL;
 ////////// YLog 日志相关静态全局变量 //////////
 
 
 ////////// 静态工具函数声明 //////////
 static long long get_current_time_string(char time_string[64], const int is_split);
+
+static int ylog_print_on_console_with_color(const int level, const char* log_string);
 ////////// 静态工具函数声明 //////////
 
 
@@ -51,7 +63,46 @@ static long long get_current_time_string(char time_string[64], const int is_spli
     return current_second;
 }
 
+static int ylog_print_on_console_with_color(const int level, const char* log_string)
+{
+    printf("%s", log_string);
+
+    switch (level)
+    {
+    case YLog_Trace:
+    // printf("\033[1;30;42;%s\033[0m\n", log_string);
+    break;
+    case YLog_Debug:
+    {
+    }
+    break;
+    case YLog_Info:
+    {
+    }
+    break;
+    case YLog_Warning:
+    {
+    }
+    break;
+    case YLog_Error:
+    {
+    }
+    break;
+    case YLog_Critical:
+    {
+    }
+    break;
+    default:
+    {
+    }
+    break;
+    }
+
+    return 0;
+}
+
 ////////// 静态工具函数实现 //////////
+
 
 int ylog_main(int argc, char** argv)
 {
@@ -60,14 +111,15 @@ int ylog_main(int argc, char** argv)
     // YLog 初始化
     static YLog_Config ylog_config;
     sprintf(ylog_config.project_name, "%s", "YLog");
-    ylog_config.is_only_print_on_console = 0;
+    ylog_config.is_only_print_on_console = 1;
+    ylog_config.is_print_on_console_with_color = 1;
     ylog_config.min_log_level = YLog_Trace;
     ylog_config.one_line_log_string_max_len = 1024;
 
     ylog_init(&ylog_config);
 
     // 打印日志
-    for (int i = 0; i < 10 * 1; i++)
+    for (int i = 0; i < 3 * 1; i++)
     {
         YLOG_TRACE("test ylog, i :%d\n", i);
         YLOG_DEBUG("test ylog, i :%d\n", i);
@@ -76,7 +128,7 @@ int ylog_main(int argc, char** argv)
         YLOG_ERROR("test ylog, i :%d\n", i);
         YLOG_CRITICAL("test ylog, i :%d\n", i);
 
-        YLOG_INFO("\n", 0);
+        YLOG_INFO("\n");
     }
 
     // YLog 退出
@@ -172,7 +224,11 @@ int ylog_push(const int level, const char* filepath, const char* functionName, c
     // 将日志输出到控制台
     if (s_ylog_config.is_only_print_on_console)
     {
-        printf("%s", s_one_log_string_buffer);
+        if (s_ylog_config.is_print_on_console_with_color)
+            ylog_print_on_console_with_color(level, s_one_log_string_buffer);
+        else
+            printf("%s", s_one_log_string_buffer);
+
         return 0;
     }
 
