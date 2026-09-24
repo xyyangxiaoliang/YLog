@@ -32,7 +32,7 @@ static FILE* s_fp_ylog_file = NULL;
 ////////// 静态工具函数声明 //////////
 static long long get_current_time_string(char time_string[64], const int is_split);
 
-static int ylog_print_on_console_with_color(const int level, const char* log_string);
+static void ylog_print_on_console_with_color(const int level, const char* log_string);
 ////////// 静态工具函数声明 //////////
 
 
@@ -63,72 +63,66 @@ static long long get_current_time_string(char time_string[64], const int is_spli
     return current_second;
 }
 
-static int ylog_print_on_console_with_color(const int level, const char* log_string)
+static void ylog_print_on_console_with_color(const int level, const char* log_string)
 {
-    printf("%s", log_string);
-
     switch (level)
     {
     case YLog_Trace:
-    // printf("\033[1;30;42;%s\033[0m\n", log_string);
-    break;
+        printf("\033[0;32;40m%s\033[0m\n", log_string); // 正常，黑底绿字
+        break;
     case YLog_Debug:
-    {
-    }
-    break;
+        printf("\033[0;37;40m%s\033[0m\n", log_string); // 正常，黑底白字
+        break;
     case YLog_Info:
-    {
-    }
-    break;
+        printf("\033[0;37;40m%s\033[0m\n", log_string); // 正常，黑底白字
+        break;
     case YLog_Warning:
-    {
-    }
-    break;
+        printf("\033[1;33;40m%s\033[0m\n", log_string); // 高亮，黑底黄字
+        break;
     case YLog_Error:
-    {
-    }
-    break;
+        printf("\033[1;31;40m%s\033[0m\n", log_string); // 高亮，黑底红字
+        break;
     case YLog_Critical:
-    {
-    }
-    break;
+        printf("\033[1;35;40m%s\033[0m\n", log_string); // 高亮，黑底紫字
+        break;
     default:
-    {
+        printf("%s\n", log_string);
+        break;
     }
-    break;
-    }
-
-    return 0;
 }
 
 ////////// 静态工具函数实现 //////////
 
 
-int ylog_main(int argc, char** argv)
+int ylog_test_example(int argc, char** argv)
 {
     printf("%s\n", __FUNCTION__);
 
-    // YLog 初始化
+    // YLog 配置日志打印功能
     static YLog_Config ylog_config;
     sprintf(ylog_config.project_name, "%s", "YLog");
-    ylog_config.is_only_print_on_console = 1;
+
+    ylog_config.is_print_on_console = 1;
+    ylog_config.is_only_print_on_console = 0;
     ylog_config.is_print_on_console_with_color = 1;
+
     ylog_config.min_log_level = YLog_Trace;
     ylog_config.one_line_log_string_max_len = 1024;
 
+    // YLog 初始化
     ylog_init(&ylog_config);
 
     // 打印日志
-    for (int i = 0; i < 3 * 1; i++)
+    for (int i = 0; i < 2 * 1; i++)
     {
-        YLOG_TRACE("test ylog, i :%d\n", i);
-        YLOG_DEBUG("test ylog, i :%d\n", i);
-        YLOG_INFO("test ylog, i :%d\n", i);
-        YLOG_WARNING("test ylog, i :%d\n", i);
-        YLOG_ERROR("test ylog, i :%d\n", i);
-        YLOG_CRITICAL("test ylog, i :%d\n", i);
+        YLOG_TRACE("test ylog, i :%d", i);
+        YLOG_DEBUG("test ylog, i :%d", i);
+        YLOG_INFO("test ylog, i :%d", i);
+        YLOG_WARNING("test ylog, i :%d", i);
+        YLOG_ERROR("test ylog, i :%d", i);
+        YLOG_CRITICAL("test ylog, i :%d", i);
 
-        YLOG_INFO("\n");
+        YLOG_INFO("");
     }
 
     // YLog 退出
@@ -146,7 +140,7 @@ int ylog_init(const YLog_Config* ylog_config)
 
     s_one_log_string_buffer = (char*)malloc(ylog_config->one_line_log_string_max_len);
 
-    char ylog_file_path[4096] = { 0 };
+    char ylog_file_path[1024 * 4] = { 0 };
     sprintf(ylog_file_path, "./YLog_%d.log", 1);
     s_fp_ylog_file = fopen(ylog_file_path, "a+");
     if (s_fp_ylog_file == NULL)
@@ -155,7 +149,7 @@ int ylog_init(const YLog_Config* ylog_config)
     char time_string[64] = { 0 };
     get_current_time_string(time_string, 1);
 
-    char init_string[256] = { 0 };
+    char init_string[1024 * 5] = { 0 };
     sprintf(init_string, "\ntime :%s, YLog init path :%s, YLog init successfully.\n\n", time_string, ylog_file_path);
     printf("%s", init_string);
     fprintf(s_fp_ylog_file, "%s", init_string);
@@ -222,18 +216,21 @@ int ylog_push(const int level, const char* filepath, const char* functionName, c
     s_one_log_string_buffer[log_string_len] = '\0';
 
     // 将日志输出到控制台
-    if (s_ylog_config.is_only_print_on_console)
+    if (s_ylog_config.is_print_on_console)
     {
+        // 是否打印带颜色的日志；
         if (s_ylog_config.is_print_on_console_with_color)
             ylog_print_on_console_with_color(level, s_one_log_string_buffer);
         else
-            printf("%s", s_one_log_string_buffer);
+            printf("%s\n", s_one_log_string_buffer);
 
-        return 0;
+        // 将日志只输出到控制台
+        if (s_ylog_config.is_only_print_on_console)
+            return 0;
     }
 
     // 将日志输出到日志文件
-    fprintf(s_fp_ylog_file, "%s", s_one_log_string_buffer);
+    fprintf(s_fp_ylog_file, "%s\n", s_one_log_string_buffer);
     fflush(s_fp_ylog_file);
 
     return 0;

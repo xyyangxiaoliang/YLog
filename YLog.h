@@ -29,8 +29,9 @@ typedef struct YLog_Config
 {
     char project_name[64];                          // 使用该日志的项目名称
 
-    int is_only_print_on_console;                   // 是否只在控制台打印日志
-    int is_print_on_console_with_color;             // 在控制台打印，是否带颜色；前提条件：is_only_print_on_console=1；
+    int is_print_on_console;                        // 是否在控制台打印日志
+    int is_only_print_on_console;                   // 是否只在控制台打印日志；前提条件：is_print_on_console=1；
+    int is_print_on_console_with_color;             // 在控制台打印，是否带颜色；前提条件：is_print_on_console=1；
 
     int min_log_level;                              // 最小日志级别；小于该日志级别的不打印；
     int one_line_log_string_max_len;                // 一行日志最大字符串长度；
@@ -39,8 +40,8 @@ typedef struct YLog_Config
 ////////// YLog 日志相关数据结构定义 //////////
 
 
-// 日志测试函数
-int ylog_main(int argc, char** argv);
+// 日志测试示例函数
+int ylog_test_example(int argc, char** argv);
 
 // 日志初始化（必须执行）
 int ylog_init(const YLog_Config* ylog_config);
